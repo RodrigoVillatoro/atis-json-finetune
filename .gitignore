@@ -1,0 +1,20 @@
+# Dataset (downloaded locally, not tracked)
+data/
+
+# Python virtual environment
+.venv/
+venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# References
+reference/
+
+# Environment variables
+.env
+.env.*
