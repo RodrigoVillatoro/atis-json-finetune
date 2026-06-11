@@ -71,6 +71,24 @@ dataset itself, so there's nothing to upload besides the notebook.
 
 Everything is seeded (`SEED = 42`), so re-running reproduces the same split and training.
 
+## Compare models in Ollama
+
+After exporting GGUF models (Section 11 of the notebooks) and starting
+[Ollama](https://ollama.com), `compare_ollama.py` benchmarks them side by side (latency,
+throughput, and the eval metrics) on the same test set.
+
+```bash
+# auto-register each model from its folder (Modelfile + .gguf inside):
+uv run python compare_ollama.py \
+  --model qwen=~/Downloads/atis-qwen-unsloth \
+  --model lfm2=~/Downloads/atis-lfm2
+
+# ...or use already-registered Ollama model names:
+uv run python compare_ollama.py --model atis-qwen-unsloth --model atis-lfm2
+```
+
+Options: `--limit N` (only the first N queries), `--out DIR` (per-query CSVs, default `bench/`).
+
 ## Repo contents
 
 | File | Purpose |
