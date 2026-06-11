@@ -31,6 +31,23 @@ Guidance for working in this repo (ATIS structured-output fine-tuning experiment
   notebooks **in sync** for everything except the model-load/LoRA/training cells, so they stay a
   fair comparison (same data, schema, hyperparameters, seed, eval).
 
+## Unsloth + training (the two Unsloth notebooks)
+- **Padding-free packing is auto-enabled** by Unsloth's `SFTTrainer` even with `packing=False`
+  (log: `🦥 Unsloth: Padding-free auto-enabled`). It flattens each micro-batch of
+  `per_device_train_batch_size` examples into ONE sequence — so don't reason about padding/throughput
+  from stock-TRL defaults, and **don't shrink `MAX_SEQ_LENGTH` toward one example's length**: the cap
+  must clear the *packed* length (batch × example), or packed sequences get truncated and the fused
+  CE loss crashes. 1024 is safe headroom — it's a ceiling, not a per-step allocation.
+- **`lora_dropout=0`** (not 0.05): any nonzero dropout disables Unsloth's fast LoRA kernels
+  (log: `patched ... 0 QKV / 0 O / 0 MLP layers`) for ~no regularization gain at 2 epochs on a
+  ~9M-param adapter. Kept 0 in all three notebooks (also keeps them identical for fair comparison).
+
+## Judging a run
+- **Don't trust train loss.** It's completion-only (prompt masked) over mostly-fixed JSON
+  boilerplate, so it plateaus fast by learning the *template* while the value tokens barely move it.
+  Judge by the **generation eval** (valid-JSON %, exact match, per-field accuracy) on the held-out
+  split. Exact-match lands well below what the loss implies; **date fields** are usually the worst.
+
 ## Git + Colab workflow
 - **GitHub `main` is the single source of truth.** Colab does **not** live-sync — to pull changes,
   re-open the notebook in Colab via **File → Open notebook → GitHub** (sync can lag a minute).
